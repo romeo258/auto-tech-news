@@ -91,12 +91,19 @@ Les experts estiment un changement majeur dans l'industrie.
 
 """
 
-    filename = f"{OUTPUT_DIR}/{final_title.replace(' ', '_').replace(':','')}.md"
+    # Nettoyage du titre pour en faire un nom de fichier valide
+    safe_title = slugify(final_title)
+
+    # S'assurer que le dossier existe
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    filename = f"{OUTPUT_DIR}/{safe_title}.md"
 
     with open(filename, "w", encoding="utf-8") as f:
         f.write(md)
 
     print("Article généré :", filename)
+
 
 def main():
     all_items = []
