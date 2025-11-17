@@ -1,36 +1,35 @@
-
 name: Auto-Scrape-Tech-IA
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # Tous les jours à 6h00 UTC (7h heure Cameroun / 8h France)
-  workflow_dispatch:
+    - cron: "0 6 * * *"   # Tous les jours à 06h00 UTC
+  workflow_dispatch:       # Permet de lancer manuellement
 
 jobs:
-  build:
+  run-scraper:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install requests pandas beautifulsoup4 python-dateutil markdown openpyxl
 
-    - name: Install dependencies
-      run: |
-        pip install requests pandas beautifulsoup4 python-dateutil markdown openpyxl
+      - name: Run scraper
+        run: |
+          python scraper_generate_articles.py
 
-    - name: Run scraper
-      run: |
-        python scraper_generate_articles.py
-
-    - name: Commit and push generated articles
-      run: |
-        git config --local user.email "bot@github.com"
-        git config --local user.name "AutoScraperBot"
-        git add articles_generated
-        git commit -m "Articles générés automatiquement le $(date)" || echo "Aucun changement"
-        git push
+      - name: Commit and push generated articles
+        run: |
+          git config --local user.email "bot@github.com"
+          git config --local user.name "AutoScraperBot"
+          git add articles_generated
+          git commit -m "Articles générés automatiquement" || echo "Aucun changement"
+          git push
