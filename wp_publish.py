@@ -9,22 +9,42 @@ WP_APP_PASS = os.getenv("WP_APP_PASS")
 API_ENDPOINT = f"{WP_URL}/wp-json/wp/v2/posts"
 
 def publish_article(title, content, status="draft"):
-    auth = f"{WP_USER}:{WP_APP_PASS}"
-    token = base64.b64encode(auth.encode())
+    """
+    Envoie un article en brouillon dans WordPress.
+    - title : titre de l'article
+    - content : contenu HTML
+    - status : draft (toujours)
+    """
+
+    if not WP_URL or not WP_USER or not WP_APP_PASS:
+        print("❌ Erreur : variables WordPress (WP_URL, WP_USER, WP_APP_PASS) manquantes.")
+        return False
+
+    # Auth WP en Base64
+    token = base64.b64encode(f"{WP_USER}:{WP_APP_PASS}".encode()).decode("utf-8")
+
     headers = {
-        "Authorization": f"Basic {token.decode('utf-8')}",
+        "Authorization": f"Basic {token}",
         "Content-Type": "application/json"
     }
 
     payload = {
         "title": title,
         "content": content,
-        "status": "draft"   # FORCÉ EN BROUILLON
+        "status": "draft"  # Toujours brouillon
     }
 
-    response = requests.post(API_ENDPOINT, json=payload, headers=headers)
+    try:
+        response = requests.post(API_ENDPOINT, json=payload, headers=headers)
+    except Exception as e:
+        print("❌ Erreur de connexion à WordPress :", str(e))
+        return False
 
     if response.status_code in [200, 201]:
         print(f"✔ Brouillon créé dans WordPress : {title}")
+        return True
     else:
-        print("❌ Erreur création brouillon :", response.status_code, response.text)
+        print("❌ Erreur lors de la création du brouillon :")
+        print("Code :", response.status_code)
+        print("Réponse :", response.text)
+        return False
