@@ -6,6 +6,8 @@ from datetime import datetime
 import os
 import re
 import random
+from wp_publish import publish_article
+
 
 # ===========================
 # FONCTION POUR NOMS DE FICHIERS SÉCURISÉS
@@ -681,6 +683,8 @@ où va réellement le secteur dans les prochaines années.
 
     print(f"✔️ Article généré (template {template_id}) :", filename)
 
+# Envoi vers WordPress
+publish_article(final_title, full_html)
 
 # ===========================
 # MAIN
