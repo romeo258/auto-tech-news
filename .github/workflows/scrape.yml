@@ -1,35 +1,46 @@
-name: Auto-Scrape-Tech-IA
+name: Auto-Scrape-Tech-News
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # Tous les jours à 06h00 UTC
-  workflow_dispatch:       # Permet de lancer manuellement
+    - cron: "0 6 * * *"     # Exécution automatique chaque jour à 06h00 UTC
+  workflow_dispatch:         # Lancement manuel
 
 jobs:
   run-scraper:
     runs-on: ubuntu-latest
 
+    # ==== Variables d'environnement disponibles pour le script ====
+    env:
+      WP_URL: ${{ secrets.WP_URL }}
+      WP_USER: ${{ secrets.WP_USER }}
+      WP_APP_PASS: ${{ secrets.WP_APP_PASS }}
+
     steps:
+      # --- 1) Récupération du repository ---
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # --- 2) Installer Python ---
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
+      # --- 3) Installer les dépendances ---
       - name: Install dependencies
         run: |
-          pip install requests pandas beautifulsoup4 python-dateutil markdown openpyxl
+          pip install requests python-dateutil beautifulsoup4 markdown pandas openpyxl
 
-      - name: Run scraper
+      # --- 4) Lancer le scraper + envoi des brouillons dans WordPress ---
+      - name: Run scraper and send drafts
         run: |
           python scraper_generate_articles.py
 
+      # --- 5) Commit des articles générés dans GitHub ---
       - name: Commit and push generated articles
         run: |
           git config --local user.email "bot@github.com"
           git config --local user.name "AutoScraperBot"
-          git add articles_generated
+          git add articles_generated || true
           git commit -m "Articles générés automatiquement" || echo "Aucun changement"
-          git push
+          git push || echo "Pas de push possible"
